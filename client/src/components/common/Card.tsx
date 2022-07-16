@@ -1,50 +1,34 @@
 import {
   Box,
-  Button,
   Card as MUIcard,
+  CardActionArea,
   CardContent,
+  IconButton,
   Rating,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { fetchDetails } from '../../utils/api';
 import { MovieObj } from '../../utils/types';
+import { Favorite as FavoriteIcon } from '@mui/icons-material';
+import { CARD_HEIGHT } from '../../utils/consts';
 
 interface Props {
   data: MovieObj;
   index: number;
 }
-const getCast = (crew: string) => {
-  const formattedCrew = crew.split('(dir.), ');
-  return { director: formattedCrew[0], stars: formattedCrew[1] };
-};
-const Card = ({ data, index }: Props) => {
-  const { movieList, setMovieList } = useAppContext();
 
-  const [movieDirector, setMovieDirector] = useState('');
-  const [movieStars, setMovieStars] = useState('');
+const Card = ({ data, index }: Props) => {
+  const { appendPlot, favoriteList, updateFavorites } = useAppContext();
+
   const [showSummary, setShowSummary] = useState(false);
 
-  useEffect(() => {
-    if (data.crew) {
-      const { director, stars } = getCast(data.crew);
-      setMovieDirector(director);
-      setMovieStars(stars);
+  const handleSummary = async () => {
+    if (!data.plot) {
+      await appendPlot(data, index);
     }
-  }, [data.crew]);
-  useEffect(() => {
-    const appendPlot = async () => {
-      const plot = await fetchDetails(data.id);
-      const copy = [...movieList];
-      copy[index] = { ...copy[index], plot };
-      setMovieList(copy);
-    };
-    //if plot does not already exist in dataset and user has triggered call to action, fetch details
-    if (!data.plot && showSummary) {
-      appendPlot();
-    }
-  }, [showSummary]);
+    setShowSummary((prev) => !prev);
+  };
   return (
     <MUIcard
       raised
@@ -52,7 +36,7 @@ const Card = ({ data, index }: Props) => {
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
+        height: { CARD_HEIGHT },
         boxShadow: `0px 1px 2px 1px #00000026`,
       }}
     >
@@ -95,23 +79,41 @@ const Card = ({ data, index }: Props) => {
             </Box>
             <Box>
               <Typography variant='caption'>
-                <strong>Director:</strong> {movieDirector}
+                <strong>Director:</strong> {data.director}
               </Typography>
             </Box>
             <Box>
               <Typography variant='caption'>
-                <strong>Stars:</strong> {movieStars}
+                <strong>Stars:</strong> {data.stars}
               </Typography>
             </Box>
-            <Box sx={{ marginTop: 'auto' }}>
-              <Button onClick={() => setShowSummary((prev) => !prev)}>
-                Summary
-              </Button>
+
+            <Box>
+              <IconButton
+                size='large'
+                onClick={() => updateFavorites(data)}
+                color={
+                  favoriteList.find((i) => i.id === data.id)
+                    ? 'success'
+                    : 'default'
+                }
+              >
+                <FavoriteIcon />
+              </IconButton>
             </Box>
           </Box>
-          <Box sx={{ '& > img': { maxWidth: 150 }, flex: 1, ml: 1 }}>
+          <CardActionArea
+            sx={{ '& > img': { maxWidth: 150 }, flex: 1, ml: 1 }}
+            onClick={handleSummary}
+          >
             {!showSummary ? (
-              <img src={data.image} />
+              <img
+                src={data.image}
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null;
+                  currentTarget.src = require('../../assets/default.jpg');
+                }}
+              />
             ) : (
               <>
                 <Typography variant='caption'>
@@ -120,12 +122,11 @@ const Card = ({ data, index }: Props) => {
                 <Typography>{data.plot}</Typography>
               </>
             )}
-          </Box>
+          </CardActionArea>
         </Box>
       </CardContent>
-      {/* <CardContent>{data.title}</CardContent> */}
     </MUIcard>
   );
 };
 
-export default Card;
+export default memo(Card);
