@@ -1,5 +1,5 @@
 import { Autocomplete, Box, TextField } from '@mui/material';
-import { MovieObj } from '../utils/types';
+import { MovieObj } from '../../utils/types';
 
 interface Props {
   list: MovieObj[];

@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react';
 
-import { fetchList, fetchDetails } from '../utils/api';
+import { fetchTop, fetchDetails } from '../utils/api';
 import { MovieObj } from '../utils/types';
 
 interface Props {
@@ -18,7 +18,14 @@ interface Context {
   movieList: MovieObj[];
   favoriteList: MovieObj[];
   updateFavorites: (item: MovieObj) => void;
-  appendPlot: (item: MovieObj, index: number) => void;
+  setPopularList: (array: Array<MovieObj>) => void;
+  popularList: MovieObj[];
+  setTheatreList: (array: Array<MovieObj>) => void;
+  theatreList: MovieObj[];
+  setSummary: (str: string) => void;
+  summary: string;
+  openModal: boolean;
+  setOpenModal: (val: boolean) => void;
 }
 
 const AppContext = createContext<Context>({
@@ -26,29 +33,41 @@ const AppContext = createContext<Context>({
   movieList: [],
   favoriteList: [],
   updateFavorites: () => {},
-  appendPlot: () => {},
+  setPopularList: () => {},
+  popularList: [],
+  setTheatreList: () => {},
+  theatreList: [],
+  setSummary: () => {},
+  summary: '',
+  setOpenModal: () => {},
+  openModal: false,
 });
 
 export const useAppContext = () => useContext(AppContext);
+export const AppState = AppContext.Consumer;
 
 const AppProvider = ({ children }: Props) => {
   const [movieList, setMovieList] = useState<MovieObj[]>([]);
   const [favoriteList, setFavoriteList] = useState<MovieObj[]>([]);
+  const [popularList, setPopularList] = useState<MovieObj[]>([]);
+  const [theatreList, setTheatreList] = useState<MovieObj[]>([]);
+  const [summary, setSummary] = useState('');
+  const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
     const getCast = (crew: string) => {
       const formattedCrew = crew.split('(dir.), ');
-      return { director: formattedCrew[0], stars: formattedCrew[1] };
+      return { directors: formattedCrew[0], stars: formattedCrew[1] };
     };
     const mount = async () => {
       const favoritesFromStorage = localStorage.getItem('favorites');
       if (favoritesFromStorage) {
         setFavoriteList(JSON.parse(favoritesFromStorage));
       }
-      const list = await fetchList();
+      const list = await fetchTop();
       list.map((i: MovieObj) => {
-        const { director, stars } = getCast(i.crew);
-        i.director = director;
+        const { directors, stars } = getCast(i.crew);
+        i.directors = directors;
         i.stars = stars;
         return i;
       });
@@ -57,7 +76,7 @@ const AppProvider = ({ children }: Props) => {
     mount();
   }, []);
 
-  const updateFavorites = (item: MovieObj) => {
+  const updateFavorites = async (item: MovieObj) => {
     const favoredIdx = favoriteList.findIndex((obj) => obj.id === item.id);
     if (favoredIdx > -1) {
       const clone = [...favoriteList];
@@ -65,17 +84,14 @@ const AppProvider = ({ children }: Props) => {
       localStorage.setItem('favorites', JSON.stringify(clone));
       setFavoriteList(clone);
     } else {
+      const plot = await fetchDetails(item.id);
+      item.plot = plot;
       const newList = [...favoriteList, item];
       localStorage.setItem('favorites', JSON.stringify(newList));
       setFavoriteList((prev) => [...prev, item]);
     }
   };
-  const appendPlot = async (data: MovieObj, index: number) => {
-    const plot = await fetchDetails(data.id);
-    const clone = [...movieList];
-    clone[index].plot = plot;
-    setMovieList(clone);
-  };
+
   return (
     <AppContext.Provider
       value={{
@@ -83,7 +99,14 @@ const AppProvider = ({ children }: Props) => {
         movieList,
         favoriteList,
         updateFavorites,
-        appendPlot,
+        setPopularList,
+        popularList,
+        setTheatreList,
+        theatreList,
+        summary,
+        setSummary,
+        openModal,
+        setOpenModal,
       }}
     >
       {children}

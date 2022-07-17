@@ -1,5 +1,20 @@
 import { createTheme } from '@mui/material';
 
+declare module '@mui/material/styles' {
+  interface BreakpointOverrides {
+    xs: true; // removes the `xs` breakpoint
+    sm: true;
+    md: true;
+    lg: true;
+    xl: true;
+    xxl: true;
+    mobile: false; // adds the `mobile` breakpoint
+    tablet: false;
+    laptop: false;
+    desktop: false;
+  }
+}
+
 const theme = createTheme({
   palette: {
     primary: {
@@ -7,6 +22,9 @@ const theme = createTheme({
     },
     secondary: {
       main: '#90be6d',
+    },
+    success: {
+      main: '#EF626C',
     },
   },
   typography: {
@@ -27,6 +45,16 @@ const theme = createTheme({
     body2: {
       fontSize: '12px',
       color: '#5e5e5e',
+    },
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 760,
+      md: 1080,
+      lg: 1440,
+      xl: 2000,
+      xxl: 2001,
     },
   },
 });

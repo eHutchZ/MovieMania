@@ -1,9 +1,12 @@
 import {
   Box,
+  Button,
   Card as MUIcard,
   CardActionArea,
   CardContent,
+  CircularProgress,
   IconButton,
+  Modal,
   Rating,
   Typography,
 } from '@mui/material';
@@ -15,20 +18,24 @@ import { CARD_HEIGHT } from '../../utils/consts';
 
 interface Props {
   data: MovieObj;
-  index: number;
+  appendPlot?: Function;
 }
 
-const Card = ({ data, index }: Props) => {
-  const { appendPlot, favoriteList, updateFavorites } = useAppContext();
-
-  const [showSummary, setShowSummary] = useState(false);
-
+const Card = ({ data, appendPlot }: Props) => {
+  const { favoriteList, updateFavorites, setSummary, setOpenModal } =
+    useAppContext();
   const handleSummary = async () => {
+    setOpenModal(true);
     if (!data.plot) {
-      await appendPlot(data, index);
+      if (appendPlot) {
+        const details = await appendPlot(data);
+        setSummary(details.plot);
+      }
+    } else {
+      setSummary(data.plot);
     }
-    setShowSummary((prev) => !prev);
   };
+
   return (
     <MUIcard
       raised
@@ -36,8 +43,11 @@ const Card = ({ data, index }: Props) => {
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
-        height: { CARD_HEIGHT },
+        height: '100%',
+        maxHeight: { CARD_HEIGHT },
         boxShadow: `0px 1px 2px 1px #00000026`,
+        position: 'relative',
+        background: 'hsla(0,0%,95.3%,.5)',
       }}
     >
       <CardContent>
@@ -79,7 +89,7 @@ const Card = ({ data, index }: Props) => {
             </Box>
             <Box>
               <Typography variant='caption'>
-                <strong>Director:</strong> {data.director}
+                <strong>Directors:</strong> {data.directors}
               </Typography>
             </Box>
             <Box>
@@ -87,8 +97,57 @@ const Card = ({ data, index }: Props) => {
                 <strong>Stars:</strong> {data.stars}
               </Typography>
             </Box>
-
-            <Box>
+          </Box>
+          <CardActionArea
+            sx={{
+              '& > img': { maxWidth: 150 },
+              flex: 1,
+              ml: 1,
+              display: 'flex',
+            }}
+          >
+            <img
+              src={data.image}
+              onError={({ currentTarget }) => {
+                currentTarget.onerror = null;
+                currentTarget.src = require('../../assets/default.jpg');
+              }}
+            />
+          </CardActionArea>
+          <Box
+            sx={{
+              position: 'absolute',
+              opacity: 0,
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+              transition: 'all .2s ease-in',
+              '&:hover': {
+                opacity: 1,
+                cursor: 'pointer',
+              },
+            }}
+          >
+            <Box
+              sx={{
+                width: '100%',
+                backgroundColor: 'rgba(144, 190, 109, 0.65)',
+                height: 48,
+                px: 2,
+              }}
+            >
+              <Button
+                variant='contained'
+                type='button'
+                size='small'
+                onClick={handleSummary}
+              >
+                Plot
+              </Button>
               <IconButton
                 size='large'
                 onClick={() => updateFavorites(data)}
@@ -102,27 +161,6 @@ const Card = ({ data, index }: Props) => {
               </IconButton>
             </Box>
           </Box>
-          <CardActionArea
-            sx={{ '& > img': { maxWidth: 150 }, flex: 1, ml: 1 }}
-            onClick={handleSummary}
-          >
-            {!showSummary ? (
-              <img
-                src={data.image}
-                onError={({ currentTarget }) => {
-                  currentTarget.onerror = null;
-                  currentTarget.src = require('../../assets/default.jpg');
-                }}
-              />
-            ) : (
-              <>
-                <Typography variant='caption'>
-                  <strong>Summary:</strong>
-                </Typography>
-                <Typography>{data.plot}</Typography>
-              </>
-            )}
-          </CardActionArea>
         </Box>
       </CardContent>
     </MUIcard>

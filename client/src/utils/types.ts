@@ -4,9 +4,8 @@ export interface MovieObj {
   title: string;
   fullTitle: string;
   imDbRating: string;
-  description: string | undefined;
   crew: string;
-  director: string;
+  directors: string;
   stars: string;
   plot: string | undefined;
   favorite: boolean | undefined;
