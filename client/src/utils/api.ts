@@ -3,35 +3,43 @@ import axios from 'axios';
 export const fetchTop = async () => {
   try {
     const res = await axios.get('/top');
-    //TODO: error state
-    return res.data.items || [];
+    if (res?.data?.items && res?.data?.errorMessage.length <= 0) {
+      return res.data.items;
+    } else {
+      Error('Error');
+    }
   } catch (err) {
-    return [];
+    throw err;
   }
 };
 export const fetchPopular = async () => {
   try {
     const res = await axios.get('/popular');
-    //TODO: error state
-    return res.data.items || [];
+    if (res?.data?.items && res?.data?.errorMessage.length <= 0) {
+      return res.data.items;
+    } else {
+      throw Error('Error');
+    }
   } catch (err) {
-    return [];
+    throw err;
   }
 };
 export const fetchTheatres = async () => {
   try {
     const res = await axios.get('/theatres');
-    //TODO: error state
-    return res.data.items || [];
+    if (res?.data?.items && res?.data?.errorMessage.length <= 0) {
+      return res.data.items;
+    } else {
+      throw Error('Error');
+    }
   } catch (err) {
-    return [];
+    throw err;
   }
 };
 
 export const fetchDetails = async (id: string) => {
   try {
     const res = await axios.get(`/details?id=${id}`);
-    //TODO: error state
     return res.data.plot || '';
   } catch (err) {
     return '';

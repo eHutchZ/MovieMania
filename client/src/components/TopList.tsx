@@ -7,23 +7,29 @@ import { appendPlot, getCast } from '../utils/util';
 import ListContainer from './common/ListContainer';
 
 const TopList = () => {
-  const { movieList, setMovieList } = useAppContext();
+  const { movieList, setError, setMovieList } = useAppContext();
 
   const ITEMS_COUNT = 18;
 
   useEffect(() => {
     const mount = async () => {
-      const list = await fetchTop();
-      list.map((i: MovieObj) => {
-        const { directors, stars } = getCast(i.crew);
-        i.directors = directors;
-        i.stars = stars;
-        return i;
-      });
-      setMovieList(list);
+      try {
+        const list = await fetchTop();
+        list.map((i: MovieObj) => {
+          const { directors, stars } = getCast(i.crew);
+          i.directors = directors;
+          i.stars = stars;
+          return i;
+        });
+        setMovieList(list);
+      } catch (err) {
+        setError(true);
+      }
     };
-    mount();
-  }, []);
+    if (movieList.length === 0) {
+      mount();
+    }
+  }, [movieList, setError, setMovieList]);
 
   return (
     <ListContainer

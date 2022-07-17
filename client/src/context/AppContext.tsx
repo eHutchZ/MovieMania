@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react';
 
-import { fetchTop, fetchDetails } from '../utils/api';
+import { fetchDetails } from '../utils/api';
 import { MovieObj } from '../utils/types';
 
 interface Props {
@@ -26,6 +26,8 @@ interface Context {
   summary: string;
   openModal: boolean;
   setOpenModal: (val: boolean) => void;
+  error: boolean;
+  setError: (val: boolean) => void;
 }
 
 const AppContext = createContext<Context>({
@@ -41,6 +43,8 @@ const AppContext = createContext<Context>({
   summary: '',
   setOpenModal: () => {},
   openModal: false,
+  setError: () => {},
+  error: false,
 });
 
 export const useAppContext = () => useContext(AppContext);
@@ -53,25 +57,14 @@ const AppProvider = ({ children }: Props) => {
   const [theatreList, setTheatreList] = useState<MovieObj[]>([]);
   const [summary, setSummary] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const getCast = (crew: string) => {
-      const formattedCrew = crew.split('(dir.), ');
-      return { directors: formattedCrew[0], stars: formattedCrew[1] };
-    };
     const mount = async () => {
       const favoritesFromStorage = localStorage.getItem('favorites');
       if (favoritesFromStorage) {
         setFavoriteList(JSON.parse(favoritesFromStorage));
       }
-      const list = await fetchTop();
-      list.map((i: MovieObj) => {
-        const { directors, stars } = getCast(i.crew);
-        i.directors = directors;
-        i.stars = stars;
-        return i;
-      });
-      setMovieList(list);
     };
     mount();
   }, []);
@@ -107,6 +100,8 @@ const AppProvider = ({ children }: Props) => {
         setSummary,
         openModal,
         setOpenModal,
+        setError,
+        error,
       }}
     >
       {children}

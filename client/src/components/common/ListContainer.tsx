@@ -1,9 +1,10 @@
 import { useState } from 'react';
-
-import { Box, Pagination, Typography } from '@mui/material';
+import { Box, Pagination } from '@mui/material';
+import { useAppContext } from '../../context/AppContext';
 import CardGroup from './CardGroup';
 import CardSkeleton from './CardSkeleton';
 import Searchbar from './Searchbar';
+import Error from './Error';
 import { MovieObj } from '../../utils/types';
 import { listValue } from '../../utils/util';
 
@@ -12,11 +13,12 @@ interface Props {
   paginationCount: number;
   appendPlot?: Function;
 }
-const ListContainer = ({ list, paginationCount, appendPlot }: Props) => {
+const ListContainer = ({ appendPlot, list, paginationCount }: Props) => {
   const [page, setPage] = useState(1);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const { error } = useAppContext();
 
-  return (
+  return !error ? (
     <>
       <Box
         sx={{
@@ -59,6 +61,8 @@ const ListContainer = ({ list, paginationCount, appendPlot }: Props) => {
         )}
       </Box>
     </>
+  ) : (
+    <Error />
   );
 };
 

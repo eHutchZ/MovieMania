@@ -5,17 +5,23 @@ import { fetchTheatres } from '../utils/api';
 import ListContainer from './common/ListContainer';
 
 const TopList = () => {
-  const { theatreList, setTheatreList } = useAppContext();
+  const { theatreList, setError, setTheatreList } = useAppContext();
 
   const ITEMS_COUNT = 18;
 
   useEffect(() => {
     const mount = async () => {
-      const list = await fetchTheatres();
-      setTheatreList(list);
+      try {
+        const list = await fetchTheatres();
+        setTheatreList(list);
+      } catch (err) {
+        setError(true);
+      }
     };
-    mount();
-  }, []);
+    if (theatreList.length === 0) {
+      mount();
+    }
+  }, [setError, setTheatreList, theatreList]);
 
   return <ListContainer list={theatreList} paginationCount={ITEMS_COUNT} />;
 };

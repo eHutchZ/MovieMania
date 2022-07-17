@@ -4,13 +4,11 @@ import {
   Card as MUIcard,
   CardActionArea,
   CardContent,
-  CircularProgress,
   IconButton,
-  Modal,
   Rating,
   Typography,
 } from '@mui/material';
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { MovieObj } from '../../utils/types';
 import { Favorite as FavoriteIcon } from '@mui/icons-material';
@@ -112,6 +110,7 @@ const Card = ({ data, appendPlot }: Props) => {
                 currentTarget.onerror = null;
                 currentTarget.src = require('../../assets/default.jpg');
               }}
+              alt='Movie icon'
             />
           </CardActionArea>
           <Box
